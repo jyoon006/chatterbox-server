@@ -34,24 +34,41 @@ module.exports.requestHandler = function(request, response) {
   
   // The outgoing status.
   var statusCode;
-
   if(request.method === "POST") {
-    statusCode = 201;
-    console.log('POSTING', request);
-    messages.push(JSON.stringify(request._postData));
-    console.dir(messages);
-  }
 
+    statusCode = 201;
+    //console.log('POSTDATA: ' + request._postData);
+    if (request._postData) {
+      messages.push(request._postData);
+    } 
+    else {
+      var body = [];
+      request.on('data', function(chunk) {
+        body.push(chunk);
+      }).on('end', function() {
+        body = Buffer.concat(body).toString();
+        //console.log('BODY' + body);
+        // at this point, `body` has the entire request body stored in it as a string
+        messages.push(JSON.parse(body));
+        
+      });
+    }
+
+    // console.dir('messages1: ' + messages);
+
+  }
+  
   if(request.method === "GET") {
+    //console.dir(request);
     if(request.url.indexOf('/classes/') === -1) {
       statusCode = 404;
     }
     else {
       statusCode = 200;
-      console.dir(messages);
+      // console.dir('messages2: ' + messages);
     }
   }
-
+  console.log(messages);
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
 
