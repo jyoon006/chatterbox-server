@@ -28,11 +28,23 @@ module.exports.requestHandler = function(request, response) {
   // console.logs in your code.
   console.log("Serving request type " + request.method + " for url " + request.url);
 
+  //if request.method is POST statuscode = 201
   
-
-
   // The outgoing status.
-  var statusCode = 200;
+  var statusCode;
+
+  var messages = [];
+
+  if(request.method === "POST") {
+    statusCode = 201;
+    console.log('POSTING');
+    messages.push(JSON.stringify(request._postData));
+  }
+
+  if(request.method === "GET") {
+    statusCode = 200;
+  }
+  console.log(messages[0]);
 
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
@@ -54,7 +66,7 @@ module.exports.requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end(JSON.stringify({results: []}));
+  response.end(JSON.stringify({results: messages}));
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
