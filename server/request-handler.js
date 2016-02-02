@@ -12,6 +12,8 @@ this file and include it in basic-server.js so that it actually works.
 
 **************************************************************/
 
+  var messages = [];
+
 module.exports.requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
@@ -33,18 +35,22 @@ module.exports.requestHandler = function(request, response) {
   // The outgoing status.
   var statusCode;
 
-  var messages = [];
-
   if(request.method === "POST") {
     statusCode = 201;
-    console.log('POSTING');
+    console.log('POSTING', request);
     messages.push(JSON.stringify(request._postData));
+    console.dir(messages);
   }
 
   if(request.method === "GET") {
-    statusCode = 200;
+    if(request.url.indexOf('/classes/') === -1) {
+      statusCode = 404;
+    }
+    else {
+      statusCode = 200;
+      console.dir(messages);
+    }
   }
-  console.log(messages[0]);
 
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
