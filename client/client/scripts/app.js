@@ -1,8 +1,8 @@
 // YOUR CODE HERE:
-
+//var request = require('request');
 var app = {
-  lastMessageDate: new Date(new Date() - 1500000).toISOString(),
-  server: 'https://api.parse.com/1/classes/chatterbox/',
+  lastObjectId: 0,
+  server: 'http://127.0.0.1:3000/classes/messages/',
   username: window.location.search.replace(/(&|\?)username=/,""), 
   roomname: '',
   rooms: {},
@@ -15,19 +15,19 @@ var app = {
   fetch: function(){
     $.ajax({
       url: app.server,
-      type: 'GET',
-      //data: {'order': '-createdAt', 'limit': 20, 'where': {'roomname': 'lobby' } },
-      data: {'order': '-createdAt', 'limit': 100, 'where': {'createdAt': { '$gt': {"__type":"Date","iso":app.lastMessageDate} } } },
+      method: 'GET',
       success: function(data){
         console.log('chatterbox: Success. ' + data.results.length + ' messages received. Data: ', data);
         if (data.results[0]) {
           for (var i = data.results.length - 1; i >= 0 ; i--) {
-            app.addMessage(data.results[i]);
-            app.lastMessageDate = data.results[0].createdAt;
-            if(data.results[i].roomname){
-              app.addRoom(data.results[i].roomname);
+            if (data.results[i].objectId > app.lastObjectId) {
+              app.addMessage(data.results[i]);
+              if(data.results[i].roomname){
+                app.addRoom(data.results[i].roomname);
+              }            
             }
           }
+          app.lastObjectId = data.results[0].objectId;
         }
       },
       error: function(data){
@@ -51,7 +51,7 @@ var app = {
     });
     setInterval(function(){
       app.fetch()
-    }, 1000);
+    }, 500);
   },
   clearMessages: function(){
     $("#chats").children().hide();
@@ -60,7 +60,7 @@ var app = {
     $.ajax({
       // This is the url you should use to communicate with the parse API server.
       url: app.server,
-      type: 'POST',
+      method: 'POST',
       data: JSON.stringify(message),
       contentType: 'application/json',
       success: function (data) {
